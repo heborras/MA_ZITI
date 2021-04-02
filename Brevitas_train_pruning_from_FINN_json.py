@@ -7,10 +7,7 @@ import os
 import gzip
 
 
-# In[ ]:
-
-
-# External arguments
+# Get external arguments
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--finn_json")
@@ -18,16 +15,14 @@ args = parser.parse_args()
 path_to_json = str(args.finn_json)
 
 
-# In[ ]:
-
-
+# Load FINN data
 finn_json_name = path_to_json.split("/")[-1]
 print(f"Loading data from: {finn_json_name}")
 
 with gzip.open(path_to_json) as json_file:
     finn_data_raw = json.load(json_file)
 
-# check that the version is compatible
+# Check that the version is compatible
 compatible_scan_script_versions = ['0.4a', '0.4b', '0.5b', '0.6b', '0.7b', '0.8b', '1.0']
 last_key = list(finn_data_raw.keys())[-1]
 scan_script_version = finn_data_raw[last_key]['scan_script_version']
@@ -38,7 +33,7 @@ else:
     exit(1)
 
 
-# check that the run was actually successfull
+# Check that the FINN run was actually successfull
 if scan_script_version in ['0.5b', '0.6b', '0.7b', '0.8b', '1.0']:
     if finn_data_raw['PPR optimization successfull'] == False:
         print(f"FINN run wasn't succesfull, exiting here.")
@@ -51,10 +46,8 @@ else:
 # Get "best" FINN data
 finn_data = finn_data_raw[str(finn_data_raw['largest PPRing max_LUT'])]
 
-# In[ ]:
 
-
-# Parameters
+# Script settings
 
 # Version
 script_version = "0.3"
@@ -102,13 +95,14 @@ POOL_SIZE = 2
 KERNEL_SIZE = 3
 
 
-# In[ ]:
+
 # check if the output file already exists
 if os.path.isfile(output_json_folder + finn_json_name):
     print(f"Output file {output_json_folder + finn_json_name} already exists, exiting here.")
     exit()
 
-
+# Do the main imports only now
+# We want to be sure that we actually need them, because they take forever on the cluster
 # Imports for torch
 import torch
 from torch import nn
@@ -116,21 +110,8 @@ import torch.nn.utils.prune as prune
 import torch.nn.functional as F
 import random
 
-# In[ ]:
 
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
+# Imports for original script
 from dependencies import value
 
 from brevitas.inject import BaseInjector as Injector
@@ -169,7 +150,7 @@ class CommonActQuant(CommonQuant):
     
 
 
-# In[ ]:
+
 
 
 import torch
@@ -208,7 +189,7 @@ class TensorNorm(nn.Module):
             return ((x - self.running_mean) / (self.running_var + self.eps).pow(0.5)) * self.weight + self.bias
 
 
-# In[ ]:
+
 
 
 import torch
@@ -220,7 +201,7 @@ from brevitas.core.restrict_val import RestrictValueType
 #from .common import CommonWeightQuant, CommonActQuant
 
 
-# In[ ]:
+
 
 
 class CNV(Module):
@@ -298,7 +279,7 @@ class CNV(Module):
         return x
 
 
-# In[ ]:
+
 
 
 #from torch.prune import BasePruningMethod
@@ -414,7 +395,7 @@ class CoarseSIMDStructured(BasePruningMethod):
         )
 
 
-# In[ ]:
+
 
 
 import torch
@@ -449,7 +430,7 @@ class SqrHingeLoss(nn.Module):
         return squared_hinge_loss.apply(input, target)
 
 
-# In[ ]:
+
 
 
 import logging
@@ -547,7 +528,7 @@ class Logger(object):
                                  top5=epoch_meters.top5))
 
 
-# In[ ]:
+
 
 
 import random
@@ -579,7 +560,7 @@ def accuracy(output, target, topk=(1,)):
     return res
 
 
-# In[ ]:
+
 
 
 class LnCoarseSIMDStructured(BasePruningMethod):
@@ -684,10 +665,10 @@ class LnCoarseSIMDStructured(BasePruningMethod):
                     break
         
         msg = f"Num blocks already pruned: {nill_counter};\tpercentage: {100*nill_counter/n_SIMD_channels:.1f} [%]"
-        print(msg)
+        #print(msg)
         
         msg = f"Num blocks pruned now pruned: {n_SIMD_channels-non_nill_counter};\tpercentage: {100*(n_SIMD_channels-non_nill_counter)/n_SIMD_channels:.1f} [%]"
-        print(msg)
+        #print(msg)
         
         # apply the new structured mask on top of prior (potentially 
         # unstructured) mask
@@ -716,7 +697,7 @@ class LnCoarseSIMDStructured(BasePruningMethod):
         )
 
 
-# In[ ]:
+
 
 
 class LnFineSIMDStructured(BasePruningMethod):
@@ -834,13 +815,13 @@ class LnFineSIMDStructured(BasePruningMethod):
                 nok += 1
                 raise RuntimeWarning("Missmatch SIMD_out and sum of mask summation, there is likely an error in the mask creation.")
         
-        print(f"Test result: ok: {ok}, nok: {nok}")
+        #print(f"Test result: ok: {ok}, nok: {nok}")
         
         msg = f"Num cols already pruned: {nill_counter};\tpercentage: {100*nill_counter/n_channels:.1f} [%]"
-        print(msg)
+        #print(msg)
         
         msg = f"Num cols pruned now pruned: {n_channels-non_nill_counter};\tpercentage: {100*(n_channels-non_nill_counter)/n_channels:.1f} [%]"
-        print(msg)
+        #print(msg)
         
         # apply the new structured mask on top of prior (potentially 
         # unstructured) mask
@@ -870,7 +851,7 @@ class LnFineSIMDStructured(BasePruningMethod):
         )
 
 
-# In[ ]:
+
 
 
 def make_brevitas_pruning_permanent(model):
@@ -928,7 +909,7 @@ def prune_brevitas_model(model, amount, prune_class, folding, n=1):
         raise RuntimeError("Pruning method not supported!")
 
 
-# In[ ]:
+
 
 
 # Set pruning class
@@ -944,7 +925,7 @@ if not pruning_mode == None:
 else:
     prune_class = "None"
 
-# In[ ]:
+
 
 
 # Create the model
@@ -1035,7 +1016,7 @@ scheduler = None
 print(f"output_dir_path={output_dir_path}, checkpoints_dir_path={checkpoints_dir_path}")
 
 
-# In[ ]:
+
 
 
 def eval_model(epoch=None):
@@ -1105,7 +1086,7 @@ def checkpoint_best(epoch, name):
         }, best_path)
 
 
-# In[ ]:
+
 
 
 # Make pruning list
@@ -1116,7 +1097,7 @@ pruning_amount_list = list(sorted(pruning_amount_list))
 pruning_amount_list, len(pruning_amount_list)
 
 
-# In[ ]:
+
 
 
 # Main training loop
@@ -1242,7 +1223,7 @@ for p_index, pruning_amount in enumerate(pruning_amount_list):
     #checkpoint_best(epoch, f"checkpoint_final_permanently_pruned_pruning_amount-{pruning_amount:.3f}.tar")
 
 
-# In[ ]:
+
 
 
 # Compile training results
@@ -1261,31 +1242,31 @@ with gzip.open(output_json_folder + finn_json_name, 'wt') as outfile:
     json.dump(finn_data, outfile)
 
 
-# In[ ]:
 
 
 
 
 
-# In[ ]:
 
 
 
 
 
-# In[ ]:
 
 
 
 
 
-# In[ ]:
 
 
 
 
 
-# In[ ]:
+
+
+
+
+
 
 
 
