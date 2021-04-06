@@ -45,12 +45,12 @@ Results from the script:
 
 Setting up Brevitas and PyTorch:
 * Install Anaconda: https://www.anaconda.com/
-* Create a conda enviroment using the brevitas_torch-1-4.yml contained in this repository. The enviroment contains the Brevitas and PyTorch version used in the thesis work. The command could look something like this: `conda env create -f brevitas_torch-1-4.yml`
-* Create some result json files using the script for automaticaly tuning the performance parameters and store them on the computer for training.
+* Create a conda environment using the brevitas_torch-1-4.yml contained in this repository. The environment contains the Brevitas and PyTorch version used in the thesis work. The command could look something like this: `conda env create -f brevitas_torch-1-4.yml`
+* Create some result json files using the script for automatically tuning the performance parameters and store them on the computer for training.
 * Create a folder structure relative to the location of the script, where the resultin json files will be stored. Like this: `mkdir -p finn_result_jsons/after_training/`
 
 Running the script:
-* Activate the conda enviroment: `conda activate brevitas_torch-1-4`
+* Activate the conda environment: `conda activate brevitas_torch-1-4`
 * Run the script and give it the path to the ziped json file from script from chapter 4. As example like this: `python Brevitas_train_pruning_from_FINN_json.py --finn_json finn_result.json.gz`
 
 Results from the script:
