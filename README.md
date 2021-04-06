@@ -2,7 +2,9 @@
 
 ## Structure of repository
 The repository contains scripts for running the algorithms presented in the master thesis of Hendrik Borras.
-The thesis itself can be found here: https://github.com/HenniOVP/MA_ZITI/blob/main/thesis/MA_HB_2021.pdf
+The thesis itself can be found here: https://raw.githubusercontent.com/HenniOVP/MA_ZITI/main/thesis/MA_HB_2021.pdf
+
+Please be advised that opening the PDF through github's file browser may cash the JavaScript-PDF renderer of your browser. This will not happen, when opening the link above, which directly displays the PDF.
 
 ### Automatic tuning of performance parameters, Chapter 4
 The script implementing the algorithms of Chapter \ref{chap:tune} also interacts with parts of the Chapter on Pruning. Thus the script is designed to be run within the Docker container created by FINN. The script itself can be found here: https://github.com/HenniOVP/MA_ZITI/tree/main/simd-pe-tuning
@@ -26,9 +28,18 @@ Setting up the required jupyter notebook server with FINN:
 
 Running the script:
 * Open the script from jupyter notebook
+* Modify settings in the script as required. Please try to understand these settings before running the script, independent of wether you changed something or not.
+* Make sure to set the `build_dir` variable to a sensible path. This is where temporary models and folders will be created.
+* Some settings are set in two external files. These influence how parallelization is realized during runtime and can even be modified during runtime to fine-tune performance.
+    * `build_dir + '/cpu_percentage_max.txt'` Should contain one float between `1.` and `99.`. While the current CPU load is below this setting new optimization runs will be started. This allows to run multiple optimizations in parallel.
+    * `build_dir + '/num_workers.txt'` Should contain one integer above `0`.
+    Here the number of workers per running optimization can be specified. This enables a second degree of parallelization.
+    * Be careful what is set here. Large settings can lead to heavy CPU load and memory usage!
+* Run the parallel implementation to start the optimization.
 
 Results from the script:
 * Running the script produces ziped JSON files, which contain information about the optimization and results from running the given networks on an Ultra96V2 FPGA.
+* These ziped JSON files will be saved twice, once in the location specified by the `build_dir` variable and a second time in the root folder of the repository running the FINN docker container.
 
 ### Pruning in FINN, Chapter 5
 
